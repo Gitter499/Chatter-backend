@@ -7,7 +7,13 @@ package controllers
 * */
 
 import com.beust.klaxon.Klaxon
+import database.Users
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.mindrot.jbcrypt.BCrypt
+import util.ValidateState
+import util.validate
 import java.util.*
 
 interface IAuthController {
@@ -18,6 +24,7 @@ interface IAuthController {
     fun deleteUser(ctx: Context): Unit
     fun verifyUser(ctx: Context): Unit
     fun banUser(ctx: Context): Unit
+    fun loginUser(ctx: Context): Unit
 
     /*
     I don't think this is required for now
@@ -30,16 +37,37 @@ interface IAuthController {
 
 object UserController : IAuthController {
 
-    private data class User(
+    data class User(
         val email: String,
-        val _id: String,
-        val password: String
+        val first_name: String,
+        val last_name: String,
+        val password: String,
     )
 
-    private val users = hashMapOf<String, User>()
+    private fun getData(ctx: Context): User? {
+        return Klaxon().parse<User>(ctx.body())
+    }
+
 
     override fun createUser(ctx: Context) {
-        users[createID()] = ctx.body<User>()
+        val json = getData(ctx)
+        val hashedPassword = BCrypt.hashpw(json!!.password, BCrypt.gensalt(10))
+
+        val valid: ValidateState = validate(ctx, json)
+
+        if (valid != ValidateState.OK) {
+            return
+        }
+        transaction {
+            Users.insert {
+                it[email] = json.email
+                it[first_name] = json.first_name
+                it[last_name] = json.last_name
+                it[password] = hashedPassword
+            }
+        }
+
+
     }
 
     override fun updateUser(ctx: Context) {
@@ -48,7 +76,7 @@ object UserController : IAuthController {
 
     override fun getUser(ctx: Context) {
         val key = getTargetUserKey(ctx)
-        ctx.status(200).result(users[key].toString())
+        ctx.status(200).result("")
     }
 
     override fun deleteUser(ctx: Context) {
@@ -63,20 +91,20 @@ object UserController : IAuthController {
         TODO("Not yet implemented")
     }
 
+    override fun loginUser(ctx: Context) {
+        TODO("Not yet implemented")
+    }
+
     private fun createID(): String {
         return UUID.randomUUID().toString()
     }
 
-    private fun getTargetUserKey(ctx: Context): String {
+    private fun getTargetUserKey(ctx: Context): String? {
         var result: String = ""
-        val json = Klaxon().parse<User>(ctx.body())
-        users.forEach { (k, v) ->
-            if (json != null) {
-                if(v.equals(json.email)) {
-                    result = k
-                }
-            }
-        }
-        return result
+        //val json = Klaxon().parse<User>(ctx.body())
+        return null
     }
+    // Local data classes
+
+
 }

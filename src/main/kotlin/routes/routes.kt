@@ -7,8 +7,7 @@ import io.javalin.apibuilder.ApiBuilder.path
 import io.javalin.apibuilder.ApiBuilder.post
 import io.javalin.http.util.RedirectToLowercasePathPlugin
 
-fun run() {
-    @Suppress("")
+fun start() {
     val port: String = config["Port"].toString()
 
     val app: Javalin = Javalin.create { config ->
@@ -18,6 +17,21 @@ fun run() {
         path("auth/user") {
             path("create") {
                 post(UserController::createUser)
+            }
+            path("update"){
+
+            }
+            path(":user"){
+
+            }
+            path("delete"){
+
+            }
+            path("verify"){
+
+            }
+            path("ban"){
+
             }
         }
     }

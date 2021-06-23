@@ -23,7 +23,8 @@ fun main(args: Array<String>) {
     // Websockets
 
     app.ws("/ws/") { ws ->
-        ws.onConnect { ctx -> println("Connected! Host: ${ctx.host()}") }
+        ws.onConnect { ctx -> println("Connected! Host: ${ctx.host()}")
+        }
         ws.onMessage { ctx ->
             println(ctx.message().toString())
         }
