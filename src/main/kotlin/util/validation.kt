@@ -1,9 +1,9 @@
 package util
 
 import controllers.UserController
+import controllers.UserController.mapIt
 import database.Users
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -15,20 +15,18 @@ fun validateEmail(email: String): Boolean {
     return validator.matches(email)
 }
 
-fun validateUser(info: UserController.User): Boolean {
+fun validateUser(info: UserController.User?): UserController.User? {
 
-    val target = transaction {
-        val query: Query = Users.select {
-            Users.email eq info.email
-        }
-        query.firstOrNull() ?: return@transaction true
+    return transaction {
+        Users.select {
+            Users.email eq info!!.email
+        }.map { mapIt(it) }.firstOrNull()
     }
-
-    return target as Boolean
 }
 
-fun validate(ctx: Context, info: UserController.User): ValidateState {
-    if (!validateEmail(info.email)) {
+
+fun validate(ctx: Context, info: UserController.User?): ValidateState {
+    if (!validateEmail(info!!.email)) {
         ctx.status(200).json(object {
             val success: Boolean = false
             val message: String = "Email is invalid"
@@ -36,7 +34,7 @@ fun validate(ctx: Context, info: UserController.User): ValidateState {
         return ValidateState.INVALID_EMAIL
     }
 
-    if (!validateUser(info)) {
+    if (validateUser(info) != null) {
         ctx.status(200).json(object {
             val success: Boolean = false
             val message: String = "User already exists"

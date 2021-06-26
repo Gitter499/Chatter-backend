@@ -25,6 +25,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     implementation("org.xerial:sqlite-jdbc:3.30.1")
     implementation("org.mindrot", "jbcrypt", "0.4")
+    implementation("org.apache.commons", "commons-email","1.5")
+    implementation("com.auth0:java-jwt:3.17.0")
 }
 
 tasks.test {

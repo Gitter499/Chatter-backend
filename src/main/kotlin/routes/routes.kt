@@ -15,24 +15,23 @@ fun start() {
     }.start(port.toInt())
     app.routes {
         path("auth/user") {
+            post(UserController::getUser)
             path("create") {
                 post(UserController::createUser)
             }
-            path("update"){
-
+            path("update/:resource") {
+                post(UserController::updateUser)
             }
-            path(":user"){
 
+            path("delete") {
+                post(UserController::deleteUser)
             }
-            path("delete"){
-
-            }
-            path("verify"){
-
-            }
-            path("ban"){
-
-            }
+//            path("verify"){
+//                post(UserController::verifyUser)
+//            }
+//            path("ban"){
+//
+//            }
         }
     }
 }
