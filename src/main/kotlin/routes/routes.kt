@@ -33,5 +33,8 @@ fun start() {
 //
 //            }
         }
+        path("chat") {
+
+        }
     }
 }

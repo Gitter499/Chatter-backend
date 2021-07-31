@@ -6,7 +6,10 @@ package controllers
 *
 * */
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.beust.klaxon.Klaxon
+import config.config
 import database.Users
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.*
@@ -183,14 +186,21 @@ object UserController : IAuthController {
             })
         }
 
-        if (valid != ValidateState.OK){
+        if (valid != ValidateState.OK) {
             ctx.status(200).json(object {
                 val success: Boolean = false
                 val message: String = "Reason: $valid"
             })
         }
-        if (BCrypt.checkpw(target!!.password, json!!.password)) {
 
+        if (BCrypt.checkpw(target!!.password, json!!.password)) {
+            val token = JWT.create().sign(Algorithm.HMAC256(config["ENCRYPT_KEY"].toString()))
+            ctx.status(200).cookie("auth_token", token)
+        } else {
+            ctx.status(200).json(object {
+                val success: Boolean = false
+                val message: String = "Reason: Passwords do not match"
+            })
         }
     }
 
